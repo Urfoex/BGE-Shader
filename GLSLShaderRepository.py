@@ -24,9 +24,6 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     repository = "https://bitbucket.org/Urfoex/bge-shader"
     repository_folder = "bge-shader"
-    blend_file = os.path.basename(bpy.data.filepath)
-    blend_path = os.path.dirname(bpy.data.filepath)
-    repository_path = blend_path + os.sep + repository_folder
 
     #def __init__(self):
         #return
@@ -46,8 +43,14 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     def invoke(self, context, event):
         print("Invoke:", event)
+        self.setPaths()
         self.run()
         return {'RUNNING_MODAL'}
+
+    def setPaths(self):
+        self.blend_file = os.path.basename(bpy.data.filepath)
+        self.blend_path = os.path.dirname(bpy.data.filepath)
+        self.repository_path = self.blend_path + os.sep + self.repository_folder
 
     def run(self):
         if not os.path.isdir(self.repository_path):

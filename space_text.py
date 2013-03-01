@@ -20,6 +20,7 @@
 import bpy
 from bpy.types import Header, Menu, Panel
 from bpy.app.translations import pgettext_iface as iface_
+import os
 
 
 class TEXT_HT_header(Header):
@@ -205,16 +206,59 @@ class TEXT_MT_templates_py(Menu):
                        )
 
 
+class TEXT_MT_templates_glsl_vertex(Menu):
+    bl_label = "Vertex"
+
+    def draw(self, context):
+        vertex_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "vertex"
+        self.path_menu([vertex_path],
+                        "text.open",
+                        {"internal": True},
+                        )
+
+
+class TEXT_MT_templates_glsl_fragment(Menu):
+    bl_label = "Fragment"
+
+    def draw(self, context):
+        fragment_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "fragment"
+        self.path_menu([fragment_path],
+                        "text.open",
+                        {"internal": True},
+                        )
+
+
+class TEXT_MT_templates_glsl_geometry(Menu):
+    bl_label = "Geometry"
+
+    def draw(self, context):
+        geometry_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "geometry"
+        self.path_menu([geometry_path],
+                        "text.open",
+                        {"internal": True},
+                        )
+
+
+class TEXT_MT_templates_glsl_postprocessing(Menu):
+    bl_label = "Post Processing"
+
+    def draw(self, context):
+        postprocessing_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "postprocessing"
+        self.path_menu([postprocessing_path],
+                        "text.open",
+                        {"internal": True},
+                        )
+
+
 class TEXT_MT_templates_glsl(Menu):
     bl_label = "GLSL"
 
     def draw(self, context):
-        import os
-        self.path_menu(os.path.dirname(bpy.data.filepath) + os.sep + "bge-glsl",
-                        "text.open",
-                        {"internal": True},
-                        )
-        #self.path_menu(bpy.utils.script_paths("templates_glsl")
+        layout = self.layout
+        layout.menu("TEXT_MT_templates_glsl_vertex")
+        layout.menu("TEXT_MT_templates_glsl_fragment")
+        layout.menu("TEXT_MT_templates_glsl_geometry")
+        layout.menu("TEXT_MT_templates_glsl_postprocessing")
 
 
 class TEXT_MT_templates_osl(Menu):
