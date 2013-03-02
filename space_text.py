@@ -206,7 +206,7 @@ class TEXT_MT_templates_py(Menu):
                        )
 
 
-gBGE_GLSL_PATH = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep
+gBGE_GLSL_PATH = bpy.utils.script_paths()[1] + os.sep + "bge-shader" + os.sep
 
 
 class TEXT_MT_templates_glsl_vertex(Menu):
