@@ -7,7 +7,7 @@ bl_info = {
     "name": "Shader Repository",
     "description": "Gets GLSL Shader from a repository.",
     "author": "Manuel Bellersen (Urfoex)",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository",
     "warning": "Be sure to have Mercurial installed.",  # used for warning icon and text in addons panel
@@ -20,12 +20,12 @@ bl_info = {
 gRepoObjects = {}
 gRepoObjects['blend_file'] = os.path.basename(bpy.data.filepath)
 gRepoObjects['blend_path'] = os.path.dirname(bpy.data.filepath)
-gRepoObjects['repository'] = "https://bitbucket.org/Urfoex/bge-shader"
+gRepoObjects['repository_src'] = "https://bitbucket.org/Urfoex/bge-shader"
 gRepoObjects['repository_folder'] = "bge-shader"
-gRepoObjects['repository_path'] = gRepoObjects['blend_path'] + os.sep + gRepoObjects['repository_folder']
+gRepoObjects['repository_dest'] = bpy.utils.script_paths()[1] + os.sep + gRepoObjects['repository_folder']
 gRepoObjects['template_path'] = "startup" + os.sep + "bl_ui"
 gRepoObjects['template_file'] = "space_text.py"
-gRepoObjects['template_src'] = gRepoObjects['repository_path'] + os.sep + gRepoObjects['template_file']
+gRepoObjects['template_src'] = gRepoObjects['repository_dest'] + os.sep + gRepoObjects['template_file']
 gRepoObjects['template_dest'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file']
 
 
@@ -36,8 +36,7 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     def __del__(self):
         import shutil
-        print("Removing repo:", gRepoObjects['repository_path'])
-        #subprocess.call(args=['rm', "-r", self.repository_path])
+        print("Removing repo:", gRepoObjects['repository_dest'])
         print("(STUB)")
 
         src_file = gRepoObjects['template_src'] + ".orig"
@@ -60,24 +59,24 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     def run(self):
         retCode = 1
-        if not os.path.isdir(gRepoObjects['repository_path']):
-            print("Cloning:", gRepoObjects['repository'], "to:", gRepoObjects['repository_path'], "...")
+        if not os.path.isdir(gRepoObjects['repository_dest']):
+            print("Cloning:", gRepoObjects['repository_src'], "to:", gRepoObjects['repository_dest'], "...")
             retCode = self.CloneRepository()
         else:
-            print("Updating repository at:", gRepoObjects['repository_path'], "...")
+            print("Updating repository at:", gRepoObjects['repository_dest'], "...")
             retCode = self.UpdateRepository()
         if retCode != 0:
-            print("Please check the repository at:", gRepoObjects['repository_path'])
+            print("Please check the repository at:", gRepoObjects['repository_dest'])
         else:
             import shutil
             print("Modifying template file at:", gRepoObjects['template_dest'])
             shutil.copy2(src=gRepoObjects['template_src'], dst=gRepoObjects['template_dest'])
 
     def CloneRepository(self):
-        return subprocess.call(args=['hg', 'clone', gRepoObjects['repository']], cwd=gRepoObjects['blend_path'])
+        return subprocess.call(args=['hg', 'clone', gRepoObjects['repository_src']], cwd=gRepoObjects['blend_path'])
 
     def UpdateRepository(self):
-        return subprocess.call(args=['hg', 'update'], cwd=gRepoObjects['repository_path'])
+        return subprocess.call(args=['hg', 'update'], cwd=gRepoObjects['repository_dest'])
 
 
 def menu_func(self, context):
