@@ -29,6 +29,7 @@ gRepoObjects['template_path'] = "startup" + os.sep + "bl_ui"
 gRepoObjects['template_file'] = "space_text.py"
 gRepoObjects['template_src'] = gRepoObjects['repository'] + os.sep + gRepoObjects['template_file']
 gRepoObjects['template_dest'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file']
+gRepoObjects['template_orig'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file'] + ".orig"
 
 
 class GLSLShaderRepository(bpy.types.Operator):
@@ -47,6 +48,9 @@ class GLSLShaderRepository(bpy.types.Operator):
         src_file = gRepoObjects['template_src'] + ".orig"
         print("Restoring:", gRepoObjects['template_dest'], "from:", src_file)
         shutil.copy2(src=src_file, dst=gRepoObjects['template_dest'])
+
+        print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
+        shutil.copy2(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
 
     def execute(self, context):
         print(":: inside execute ::")
@@ -69,10 +73,13 @@ class GLSLShaderRepository(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def run(self):
+        import shutil
         retCode = 0
         if not os.path.isdir(gRepoObjects['repository']):
             print("Cloning:", gRepoObjects['repository_src'], "to:", gRepoObjects['repository'], "...")
             retCode = self.CloneRepository()
+            print("Saving:", gRepoObjects['template_dest'], "to:", gRepoObjects['template_orig'])
+            shutil.copy2(src=gRepoObjects['template_dest'], dst=gRepoObjects['template_orig'])
         else:
             print("Updating repository at:", gRepoObjects['repository'], "...")
             retCode += self.PullRepository()
@@ -80,7 +87,6 @@ class GLSLShaderRepository(bpy.types.Operator):
         if retCode != 0:
             print("Please check the repository at:", gRepoObjects['repository'])
         else:
-            import shutil
             print("Modifying template file at:", gRepoObjects['template_dest'])
             shutil.copy2(src=gRepoObjects['template_src'], dst=gRepoObjects['template_dest'])
             print("Modifying script file at:", gRepoObjects['script_dest'])
