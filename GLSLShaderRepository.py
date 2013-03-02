@@ -38,14 +38,14 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_label = "Import GLSL Shader Repository"
     bl_options = {'REGISTER'}
 
-    def __init_(self):
+    def __init_(self, context):
         print("Activation")
 
     def __del__(self):
         print("Deactivation")
         if os.path.exists(gRepoObjects['template_orig']):
             print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
-            shutil.copy2(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
+            shutil.move(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
 
     def execute(self, context):
         print(":: inside execute ::")
