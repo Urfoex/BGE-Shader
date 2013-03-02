@@ -38,6 +38,15 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_label = "Import GLSL Shader Repository"
     bl_options = {'REGISTER'}
 
+    def __init_(self):
+        print("Activation")
+
+    def __del__(self):
+        print("Activation")
+        if os.path.exists(gRepoObjects['template_orig']):
+            print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
+            shutil.copy2(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
+
     def execute(self, context):
         print(":: inside execute ::")
         import time
@@ -90,30 +99,16 @@ class GLSLShaderRepository(bpy.types.Operator):
         return subprocess.call(args=['hg', 'pull'], cwd=gRepoObjects['repository'])
 
 
-def on_activation():
-    None
-
-
-def on_deactivation():
-    if os.path.exists(gRepoObjects('template_orig')):
-        print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
-        shutil.copy2(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
-
-
 def menu_func(self, context):
     self.layout.operator(GLSLShaderRepository.bl_idname, text="GLSL Shader Repository")
 
 
 def register():
-    print("bge-s: activating...")
-    on_activation()
     bpy.utils.register_class(GLSLShaderRepository)
     bpy.types.INFO_MT_file_import.append(menu_func)
 
 
 def unregister():
-    print("bge-s: deactivating...")
-    on_deactivation()
     bpy.utils.unregister_class(GLSLShaderRepository)
     bpy.types.INFO_MT_file_import.remove(menu_func)
 
