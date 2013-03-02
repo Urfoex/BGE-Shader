@@ -42,7 +42,7 @@ class GLSLShaderRepository(bpy.types.Operator):
         print("Activation")
 
     def __del__(self):
-        print("Activation")
+        print("Deactivation")
         if os.path.exists(gRepoObjects['template_orig']):
             print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
             shutil.copy2(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
