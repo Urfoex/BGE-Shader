@@ -206,48 +206,39 @@ class TEXT_MT_templates_py(Menu):
                        )
 
 
+gBGE_GLSL_PATH = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep
+
+
 class TEXT_MT_templates_glsl_vertex(Menu):
     bl_label = "Vertex"
 
     def draw(self, context):
-        vertex_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "vertex"
-        self.path_menu([vertex_path],
-                        "text.open",
-                        {"internal": True},
-                        )
+        vertex_path = gBGE_GLSL_PATH + "vertex"
+        self.path_menu([vertex_path], "text.open", {"internal": True},)
 
 
 class TEXT_MT_templates_glsl_fragment(Menu):
     bl_label = "Fragment"
 
     def draw(self, context):
-        fragment_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "fragment"
-        self.path_menu([fragment_path],
-                        "text.open",
-                        {"internal": True},
-                        )
+        fragment_path = gBGE_GLSL_PATH + "fragment"
+        self.path_menu([fragment_path], "text.open", {"internal": True},)
 
 
 class TEXT_MT_templates_glsl_geometry(Menu):
     bl_label = "Geometry"
 
     def draw(self, context):
-        geometry_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "geometry"
-        self.path_menu([geometry_path],
-                        "text.open",
-                        {"internal": True},
-                        )
+        geometry_path = gBGE_GLSL_PATH + "geometry"
+        self.path_menu([geometry_path], "text.open", {"internal": True},)
 
 
 class TEXT_MT_templates_glsl_postprocessing(Menu):
     bl_label = "Post Processing"
 
     def draw(self, context):
-        postprocessing_path = os.path.dirname(bpy.data.filepath) + os.sep + "bge-shader" + os.sep + "postprocessing"
-        self.path_menu([postprocessing_path],
-                        "text.open",
-                        {"internal": True},
-                        )
+        postprocessing_path = gBGE_GLSL_PATH + "postprocessing"
+        self.path_menu([postprocessing_path], "text.open", {"internal": True},)
 
 
 class TEXT_MT_templates_glsl(Menu):
@@ -276,7 +267,8 @@ class TEXT_MT_templates(Menu):
 
     def draw(self, context):
         layout = self.layout
-        layout.menu("TEXT_MT_templates_glsl")
+        if os.path.exists(gBGE_GLSL_PATH):
+            layout.menu("TEXT_MT_templates_glsl")
         layout.menu("TEXT_MT_templates_py")
         layout.menu("TEXT_MT_templates_osl")
 

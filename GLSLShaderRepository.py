@@ -8,7 +8,7 @@ bl_info = {
     "name": "Shader Repository",
     "description": "Gets GLSL Shader from a repository.",
     "author": "Manuel Bellersen (Urfoex)",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository",
     "warning": "Be sure to have Mercurial installed.",  # used for warning icon and text in addons panel
@@ -39,7 +39,6 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def __del__(self):
-        print("Deactivation")
         if os.path.exists(gRepoObjects['template_orig']):
             print("Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'])
             shutil.move(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
@@ -47,18 +46,17 @@ class GLSLShaderRepository(bpy.types.Operator):
             print("Removing:", gRepoObjects['repository'])
             shutil.rmtree(path=gRepoObjects['repository'])
 
-    def execute(self, context):
-        print(":: inside execute ::")
-        import time
-        start_time = time.clock()
-        print("execute started at:", start_time)
-        self.run()
-        print("execute finished at:", time.clock())
-        print("took about", time.clock() - start_time, "s")
-        return {'FINISHED'}
+    # unused
+    #def execute(self, context):
+        #import time
+        #start_time = time.clock()
+        #print("execute started at:", start_time)
+        #self.run()
+        #print("execute finished at:", time.clock())
+        #print("took about", time.clock() - start_time, "s")
+        #return {'FINISHED'}
 
     def invoke(self, context, event):
-        print(":: inside invoke ::")
         import time
         start_time = time.clock()
         print("execute started at:", start_time)
