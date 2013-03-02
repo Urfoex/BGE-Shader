@@ -63,13 +63,14 @@ class GLSLShaderRepository(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def run(self):
-        retCode = 1
+        retCode = 0
         if not os.path.isdir(gRepoObjects['repository']):
             print("Cloning:", gRepoObjects['repository_src'], "to:", gRepoObjects['repository'], "...")
             retCode = self.CloneRepository()
         else:
             print("Updating repository at:", gRepoObjects['repository'], "...")
-            retCode = self.UpdateRepository()
+            retCode += self.PullRepository()
+            retCode += self.UpdateRepository()
         if retCode != 0:
             print("Please check the repository at:", gRepoObjects['repository'])
         else:
@@ -82,6 +83,9 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     def UpdateRepository(self):
         return subprocess.call(args=['hg', 'update'], cwd=gRepoObjects['repository'])
+
+    def PullRepository(self):
+        return subprocess.call(args=['hg', 'pull'], cwd=gRepoObjects['repository'])
 
 
 def menu_func(self, context):
