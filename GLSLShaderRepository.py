@@ -22,6 +22,9 @@ gRepoObjects['repository_src'] = "https://bitbucket.org/Urfoex/bge-shader"
 gRepoObjects['repository_folder'] = "bge-shader"
 gRepoObjects['repository_dest'] = bpy.utils.script_paths()[1]
 gRepoObjects['repository'] = gRepoObjects['repository_dest'] + os.sep + gRepoObjects['repository_folder']
+gRepoObjects['script_file'] = "GLSLShaderRepository.py"
+gRepoObjects['script_src'] = gRepoObjects['repository'] + os.sep + gRepoObjects['script_file']
+gRepoObjects['script_dest'] = gRepoObjects['repository_dest'] + os.sep + "addons" + os.sep + gRepoObjects['script_file']
 gRepoObjects['template_path'] = "startup" + os.sep + "bl_ui"
 gRepoObjects['template_file'] = "space_text.py"
 gRepoObjects['template_src'] = gRepoObjects['repository'] + os.sep + gRepoObjects['template_file']
@@ -32,6 +35,9 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_idname = "wm.import_glsl_shader_repository"
     bl_label = "Import GLSL Shader Repository"
     bl_options = {'REGISTER'}
+
+    def __init__(self):
+        print(":: __init__ ::")
 
     def __del__(self):
         import shutil
@@ -53,7 +59,7 @@ class GLSLShaderRepository(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        print(":: inside invode ::")
+        print(":: inside invoke ::")
         import time
         start_time = time.clock()
         print("execute started at:", start_time)
@@ -77,6 +83,8 @@ class GLSLShaderRepository(bpy.types.Operator):
             import shutil
             print("Modifying template file at:", gRepoObjects['template_dest'])
             shutil.copy2(src=gRepoObjects['template_src'], dst=gRepoObjects['template_dest'])
+            print("Modifying script file at:", gRepoObjects['script_dest'])
+            shutil.copy2(src=gRepoObjects['script_src'], dst=gRepoObjects['script_dest'])
 
     def CloneRepository(self):
         return subprocess.call(args=['hg', 'clone', gRepoObjects['repository_src']], cwd=gRepoObjects['repository_dest'])
@@ -99,6 +107,7 @@ def register():
 
 
 def unregister():
+    print("bge-s: deactivating...")
     bpy.utils.unregister_class(GLSLShaderRepository)
     bpy.types.INFO_MT_file_import.remove(menu_func)
 
