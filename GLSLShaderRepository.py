@@ -38,9 +38,9 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_label = "Import GLSL Shader Repository"
     bl_options = {'REGISTER'}
 
-    def __init_(self, name, bases, attributes):
+    def __init_(self, cls, name, bases, attributes):
         print("Activation")
-        super(bpy.types.Operator, self).__init__(name, bases, attributes)
+        super(bpy.types.Operator, self).__init__(cls, name, bases, attributes)
 
     def __del__(self):
         print("Deactivation")
