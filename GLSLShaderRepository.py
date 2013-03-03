@@ -11,7 +11,7 @@ bl_info = {
     "version": (0, 3),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository",
-    "warning": "Be sure to have Mercurial installed.",  # used for warning icon and text in addons panel
+    "warning": "Be sure to have Mercurial installed. Don't mix with ZIP version of this script!",  # used for warning icon and text in addons panel
     "wiki_url": "https://bitbucket.org/Urfoex/bge-shader",
     "tracker_url": "https://bitbucket.org/Urfoex/bge-shader",
     "category": "Game Engine"

@@ -7,10 +7,10 @@ bl_info = {
     "name": "Shader Repository ZIP",
     "description": "Gets GLSL Shader zipped from a repository.",
     "author": "Manuel Bellersen (Urfoex)",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository ZIP",
-    "warning": "",  # used for warning icon and text in addons panel
+    "warning": "Don't mix with Mercurial version of this script!",  # used for warning icon and text in addons panel
     "wiki_url": "https://bitbucket.org/Urfoex/bge-shader",
     "tracker_url": "https://bitbucket.org/Urfoex/bge-shader",
     "category": "Game Engine"
@@ -114,6 +114,7 @@ class GLSLShaderRepositoryZIP(bpy.types.Operator):
             shutil.copy2(src=script_src, dst=gRepoObjects['script_dest'])
 
         shutil.rmtree(path=p)
+        os.remove(gRepoObjects['local_zip'])
 
     def run(self):
         self.getRemoteZIP()
