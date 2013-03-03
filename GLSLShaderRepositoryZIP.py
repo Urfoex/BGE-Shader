@@ -7,7 +7,7 @@ bl_info = {
     "name": "Shader Repository ZIP",
     "description": "Gets GLSL Shader zipped from a repository.",
     "author": "Manuel Bellersen (Urfoex)",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository ZIP",
     "warning": "",  # used for warning icon and text in addons panel
@@ -31,6 +31,9 @@ gRepoObjects['template_src'] = gRepoObjects['repository'] + os.sep + gRepoObject
 gRepoObjects['template_dest'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file']
 gRepoObjects['template_orig'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file'] + ".orig"
 gRepoObjects['repository_zip'] = "https://bitbucket.org/Urfoex/bge-shader/get/default.zip"
+gRepoObjects['local_zip'] = gRepoObjects['repository_dest'] + os.sep + "default.zip"
+gRepoObjects['local_zip_extracted'] = gRepoObjects['repository_dest'] + os.sep + "shader" + os.sep
+gRepoObjects['shader'] = ["vertex", "fragment", "geometry", "postprocessing"]
 
 
 class GLSLShaderRepositoryZIP(bpy.types.Operator):
@@ -70,20 +73,36 @@ class GLSLShaderRepositoryZIP(bpy.types.Operator):
         import urllib
         import urllib.request
 
+        print("Importing zip from:", gRepoObjects['repository_zip'])
         remote_zip = urllib.request.urlopen(gRepoObjects['repository_zip'])
-        local_zip = open(gRepoObjects['repository_dest'] + os.sep + "default.zip", 'wb')
+        local_zip = open(gRepoObjects['local_zip'], 'wb')
         local_zip.write(remote_zip.readall())
         local_zip.close()
 
     def unzipZIP(self):
         import zipfile
-        #z = zipfile.ZipFile(remote_zip)
-        #z.printdir()
+        print("Unzipping:", gRepoObjects['local_zip'])
+        z = zipfile.ZipFile(gRepoObjects['local_zip'])
+        z.extractall(path=gRepoObjects['local_zip_extracted'])
+        z.close()
         None
+
+    def moveZIPFiles(self):
+        print("Moving folders to:", gRepoObjects['repository'])
+        p = gRepoObjects['local_zip_extracted']
+        for subp  in os.listdir(path=p):
+            for shader in gRepoObjects['shader']:
+                shaderSrc = p + os.sep + subp + os.sep + shader
+                shaderDst = gRepoObjects['repository'] + os.sep + shader
+                if os.path.exists(shaderDst):
+                    shutil.rmtree(path=shaderDst)
+                shutil.move(src=shaderSrc, dst=shaderDst)
+        shutil.rmtree(path=p)
 
     def run(self):
         self.getRemoteZIP()
         self.unzipZIP()
+        self.moveZIPFiles()
         return
 
         retCode = 0
