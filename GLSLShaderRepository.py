@@ -23,7 +23,6 @@ bl_info = {
 
 class GLSLShaderRepositoryPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
-
     use_zip = bpy.props.BoolProperty(name="Use ZIPped Version", default=True)
 
     def draw(self, context):
@@ -71,10 +70,10 @@ class GLSLShaderRepository(bpy.types.Operator):
         print("--- invoke ---")
         start_time = time.clock()
         print("--- execute started at:", start_time, "---")
-        retCode = self.execute(context)
+        return_code = self.execute(context)
         print("--- execute finished at:", time.clock(), "---")
         print("--- took about", time.clock() - start_time, "s ---")
-        return retCode
+        return return_code
 
     def execute(self, context):
         print("--- execute ---")
@@ -93,15 +92,15 @@ class GLSLShaderRepository(bpy.types.Operator):
         return {'FINISHED'}
 
     def do_mercurial(self):
-        retCode = 0
+        return_code = 0
         if not os.path.isdir(self._REPO_OBJECTS['repository']):
             print("--- Cloning:", self._REPO_OBJECTS['repository_src'], "to:", self._REPO_OBJECTS['repository'], "... ---")
-            retCode = self.clone_repository()
+            return_code = self.clone_repository()
         else:
             print("--- Updating repository at:", self._REPO_OBJECTS['repository'], "... ---")
-            retCode += self.pull_repository()
-            retCode += self.update_repository()
-        if retCode != 0:
+            return_code += self.pull_repository()
+            return_code += self.update_repository()
+        if return_code != 0:
             print("--- Please check the repository at:", self._REPO_OBJECTS['repository'], "---")
         else:
             if not os.path.exists(self._REPO_OBJECTS['template_orig']):
@@ -132,21 +131,21 @@ class GLSLShaderRepository(bpy.types.Operator):
 
     def unzip_zip(self):
         print("--- Unzipping:", self._REPO_OBJECTS['local_zip'], "---")
-        z = zipfile.ZipFile(self._REPO_OBJECTS['local_zip'])
-        z.extractall(path=self._REPO_OBJECTS['local_zip_extracted'])
-        z.close()
+        zip_file = zipfile.ZipFile(self._REPO_OBJECTS['local_zip'])
+        zip_file.extractall(path=self._REPO_OBJECTS['local_zip_extracted'])
+        zip_file.close()
 
     def move_zip_files(self):
         print("--- Moving folders to:", self._REPO_OBJECTS['repository'], "---")
-        p = self._REPO_OBJECTS['local_zip_extracted']
-        for subp  in os.listdir(path=p):
-            subdir = p + os.sep + subp + os.sep
+        object_path = self._REPO_OBJECTS['local_zip_extracted']
+        for subp  in os.listdir(path=object_path):
+            subdir = object_path + os.sep + subp + os.sep
             for shader in self._REPO_OBJECTS['shader']:
-                shaderSrc = subdir + shader
-                shaderDst = self._REPO_OBJECTS['repository'] + os.sep + shader
-                if os.path.exists(shaderDst):
-                    shutil.rmtree(path=shaderDst)
-                shutil.move(src=shaderSrc, dst=shaderDst)
+                shader_source = subdir + shader
+                shader_destination = self._REPO_OBJECTS['repository'] + os.sep + shader
+                if os.path.exists(shader_destination):
+                    shutil.rmtree(path=shader_destination)
+                shutil.move(src=shader_source, dst=shader_destination)
 
             if not os.path.exists(self._REPO_OBJECTS['template_orig']):
                 print("--- Saving:", self._REPO_OBJECTS['template_dest'], "to:", self._REPO_OBJECTS['template_orig'], "---")
@@ -160,7 +159,7 @@ class GLSLShaderRepository(bpy.types.Operator):
             print("--- Modifying script file at:", self._REPO_OBJECTS['script_dest'], "---")
             shutil.copy2(src=script_src, dst=self._REPO_OBJECTS['script_dest'])
 
-        shutil.rmtree(path=p)
+        shutil.rmtree(path=object_path)
         os.remove(self._REPO_OBJECTS['local_zip'])
 
 
