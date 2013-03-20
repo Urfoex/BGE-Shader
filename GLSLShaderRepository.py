@@ -56,6 +56,7 @@ class GLSLShaderRepository(bpy.types.Operator):
     _REPO_OBJECTS['shader'] = ["vertex", "fragment", "geometry", "postprocessing"]
 
     def __del__(self):
+        print("--- deletion ---")
         self.clean_up()
 
     def clean_up(self):
@@ -89,7 +90,7 @@ class GLSLShaderRepository(bpy.types.Operator):
             self.unzip_zip()
             self.move_zip_files()
 
-        return {'FINISHED'}
+        return {'RUNNING_MODAL'}
 
     def do_mercurial(self):
         return_code = 0
