@@ -56,6 +56,9 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def __del__(self):
+        self.CleanUp()
+
+    def CleanUp(self):
         if os.path.exists(gRepoObjects['template_orig']):
             print("--- Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'], "---")
             shutil.move(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
@@ -64,8 +67,7 @@ class GLSLShaderRepository(bpy.types.Operator):
             shutil.rmtree(path=gRepoObjects['repository'])
 
     def invoke(self, context, event):
-        print("--- no invoke ---")
-        #return self.execute(context)
+        print("--- invoke ---")
         import time
         start_time = time.clock()
         print("--- execute started at:", start_time, "---")
@@ -75,13 +77,11 @@ class GLSLShaderRepository(bpy.types.Operator):
         return retCode
 
     def execute(self, context):
-        print("--- no execute ---")
+        print("--- execute ---")
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__name__].preferences
         print("--- Use ZIP:", addon_prefs.useZip, "---")
-        if os.path.exists(gRepoObjects['repository']):
-            print("Re-building !")
-            shutil.rmtree(path=gRepoObjects['repository'])
+        self.CleanUp()
 
         if not addon_prefs.useZip:
             self.DoMercurial()
