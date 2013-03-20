@@ -43,7 +43,6 @@ class GLSLShaderRepository(bpy.types.Operator):
     _REPO_OBJECTS['repository_dest'] = bpy.utils.script_paths()[1]
     _REPO_OBJECTS['repository'] = _REPO_OBJECTS['repository_dest'] + os.sep + _REPO_OBJECTS['repository_folder']
     _REPO_OBJECTS['script_file'] = "GLSLShaderRepository.py"
-    _REPO_OBJECTS['script_file_zip'] = "GLSLShaderRepositoryZIP.py"
     _REPO_OBJECTS['script_src'] = _REPO_OBJECTS['repository'] + os.sep + _REPO_OBJECTS['script_file']
     _REPO_OBJECTS['script_dest'] = _REPO_OBJECTS['repository_dest'] + os.sep + "addons" + os.sep + _REPO_OBJECTS['script_file']
     _REPO_OBJECTS['template_path'] = "startup" + os.sep + "bl_ui"
@@ -157,7 +156,7 @@ class GLSLShaderRepository(bpy.types.Operator):
             print("--- Modifying template file at:", self._REPO_OBJECTS['template_dest'], "---")
             shutil.copy2(src=tmp_src, dst=self._REPO_OBJECTS['template_dest'])
 
-            script_src = subdir + self._REPO_OBJECTS['script_file_zip']
+            script_src = subdir + self._REPO_OBJECTS['script_file']
             print("--- Modifying script file at:", self._REPO_OBJECTS['script_dest'], "---")
             shutil.copy2(src=script_src, dst=self._REPO_OBJECTS['script_dest'])
 
