@@ -2,13 +2,16 @@ import subprocess
 import os
 import bpy
 import shutil
+import urllib.request
+import time
+import zipfile
 
 
 bl_info = {
     "name": "Shader Repository",
     "description": "Gets GLSL Shader from a repository.",
     "author": "Manuel Bellersen (Urfoex)",
-    "version": (0, 4),
+    "version": (0, 5),
     "blender": (2, 66, 0),
     "location": "File > Import > GLSL Shader Repository",
     "warning": "Be sure to have Mercurial installed if you don't use zipped version.",  # used for warning icon and text in addons panel
@@ -18,36 +21,15 @@ bl_info = {
 }
 
 
-gRepoObjects = {}
-gRepoObjects['repository_src'] = "https://bitbucket.org/Urfoex/bge-shader"
-gRepoObjects['repository_folder'] = "bge-shader"
-gRepoObjects['repository_dest'] = bpy.utils.script_paths()[1]
-gRepoObjects['repository'] = gRepoObjects['repository_dest'] + os.sep + gRepoObjects['repository_folder']
-gRepoObjects['script_file'] = "GLSLShaderRepository.py"
-gRepoObjects['script_file_zip'] = "GLSLShaderRepositoryZIP.py"
-gRepoObjects['script_src'] = gRepoObjects['repository'] + os.sep + gRepoObjects['script_file']
-gRepoObjects['script_dest'] = gRepoObjects['repository_dest'] + os.sep + "addons" + os.sep + gRepoObjects['script_file']
-gRepoObjects['template_path'] = "startup" + os.sep + "bl_ui"
-gRepoObjects['template_file'] = "space_text.py"
-gRepoObjects['template_src'] = gRepoObjects['repository'] + os.sep + gRepoObjects['template_file']
-gRepoObjects['template_dest'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file']
-gRepoObjects['template_orig'] = bpy.utils.script_paths(gRepoObjects['template_path'])[0] + os.sep + gRepoObjects['template_file'] + ".orig"
-gRepoObjects['repository_zip_file'] = "default.zip"
-gRepoObjects['repository_zip'] = "https://bitbucket.org/Urfoex/bge-shader/get/" + gRepoObjects['repository_zip_file']
-gRepoObjects['local_zip'] = gRepoObjects['repository_dest'] + os.sep + gRepoObjects['repository_zip_file']
-gRepoObjects['local_zip_extracted'] = gRepoObjects['repository_dest'] + os.sep + "shader" + os.sep
-gRepoObjects['shader'] = ["vertex", "fragment", "geometry", "postprocessing"]
-
-
 class GLSLShaderRepositoryPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
-    useZip = bpy.props.BoolProperty(name="Use ZIPped Version", default=True)
+    use_zip = bpy.props.BoolProperty(name="Use ZIPped Version", default=True)
 
     def draw(self, context):
         layout = self.layout
         layout.label(text="Do you want to get the ZIPped or the Mercurial version?")
-        layout.prop(self, "useZip")
+        layout.prop(self, "use_zip")
 
 
 class GLSLShaderRepository(bpy.types.Operator):
@@ -55,20 +37,39 @@ class GLSLShaderRepository(bpy.types.Operator):
     bl_label = "Import GLSL Shader Repository"
     bl_options = {'REGISTER'}
 
-    def __del__(self):
-        self.CleanUp()
+    _REPO_OBJECTS = {}
+    _REPO_OBJECTS['repository_src'] = "https://bitbucket.org/Urfoex/bge-shader"
+    _REPO_OBJECTS['repository_folder'] = "bge-shader"
+    _REPO_OBJECTS['repository_dest'] = bpy.utils.script_paths()[1]
+    _REPO_OBJECTS['repository'] = _REPO_OBJECTS['repository_dest'] + os.sep + _REPO_OBJECTS['repository_folder']
+    _REPO_OBJECTS['script_file'] = "GLSLShaderRepository.py"
+    _REPO_OBJECTS['script_file_zip'] = "GLSLShaderRepositoryZIP.py"
+    _REPO_OBJECTS['script_src'] = _REPO_OBJECTS['repository'] + os.sep + _REPO_OBJECTS['script_file']
+    _REPO_OBJECTS['script_dest'] = _REPO_OBJECTS['repository_dest'] + os.sep + "addons" + os.sep + _REPO_OBJECTS['script_file']
+    _REPO_OBJECTS['template_path'] = "startup" + os.sep + "bl_ui"
+    _REPO_OBJECTS['template_file'] = "space_text.py"
+    _REPO_OBJECTS['template_src'] = _REPO_OBJECTS['repository'] + os.sep + _REPO_OBJECTS['template_file']
+    _REPO_OBJECTS['template_dest'] = bpy.utils.script_paths(_REPO_OBJECTS['template_path'])[0] + os.sep + _REPO_OBJECTS['template_file']
+    _REPO_OBJECTS['template_orig'] = bpy.utils.script_paths(_REPO_OBJECTS['template_path'])[0] + os.sep + _REPO_OBJECTS['template_file'] + ".orig"
+    _REPO_OBJECTS['repository_zip_file'] = "default.zip"
+    _REPO_OBJECTS['repository_zip'] = "https://bitbucket.org/Urfoex/bge-shader/get/" + _REPO_OBJECTS['repository_zip_file']
+    _REPO_OBJECTS['local_zip'] = _REPO_OBJECTS['repository_dest'] + os.sep + _REPO_OBJECTS['repository_zip_file']
+    _REPO_OBJECTS['local_zip_extracted'] = _REPO_OBJECTS['repository_dest'] + os.sep + "shader" + os.sep
+    _REPO_OBJECTS['shader'] = ["vertex", "fragment", "geometry", "postprocessing"]
 
-    def CleanUp(self):
-        if os.path.exists(gRepoObjects['template_orig']):
-            print("--- Restoring:", gRepoObjects['template_orig'], "to:", gRepoObjects['template_dest'], "---")
-            shutil.move(src=gRepoObjects['template_orig'], dst=gRepoObjects['template_dest'])
-        if os.path.exists(gRepoObjects['repository']):
-            print("--- Removing:", gRepoObjects['repository'], "---")
-            shutil.rmtree(path=gRepoObjects['repository'])
+    def __del__(self):
+        self.clean_up()
+
+    def clean_up(self):
+        if os.path.exists(self._REPO_OBJECTS['template_orig']):
+            print("--- Restoring:", self._REPO_OBJECTS['template_orig'], "to:", self._REPO_OBJECTS['template_dest'], "---")
+            shutil.move(src=self._REPO_OBJECTS['template_orig'], dst=self._REPO_OBJECTS['template_dest'])
+        if os.path.exists(self._REPO_OBJECTS['repository']):
+            print("--- Removing:", self._REPO_OBJECTS['repository'], "---")
+            shutil.rmtree(path=self._REPO_OBJECTS['repository'])
 
     def invoke(self, context, event):
         print("--- invoke ---")
-        import time
         start_time = time.clock()
         print("--- execute started at:", start_time, "---")
         retCode = self.execute(context)
@@ -80,92 +81,88 @@ class GLSLShaderRepository(bpy.types.Operator):
         print("--- execute ---")
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__name__].preferences
-        print("--- Use ZIP:", addon_prefs.useZip, "---")
-        self.CleanUp()
+        print("--- Use ZIP:", addon_prefs.use_zip, "---")
+        self.clean_up()
 
-        if not addon_prefs.useZip:
-            self.DoMercurial()
+        if not addon_prefs.use_zip:
+            self.do_mercurial()
         else:
-            self.getRemoteZIP()
-            self.unzipZIP()
-            self.moveZIPFiles()
+            self.get_remote_zip()
+            self.unzip_zip()
+            self.move_zip_files()
 
         return {'FINISHED'}
 
-    def DoMercurial(self):
+    def do_mercurial(self):
         retCode = 0
-        if not os.path.isdir(gRepoObjects['repository']):
-            print("Cloning:", gRepoObjects['repository_src'], "to:", gRepoObjects['repository'], "...")
-            retCode = self.CloneRepository()
+        if not os.path.isdir(self._REPO_OBJECTS['repository']):
+            print("--- Cloning:", self._REPO_OBJECTS['repository_src'], "to:", self._REPO_OBJECTS['repository'], "... ---")
+            retCode = self.clone_repository()
         else:
-            print("Updating repository at:", gRepoObjects['repository'], "...")
-            retCode += self.PullRepository()
-            retCode += self.UpdateRepository()
+            print("--- Updating repository at:", self._REPO_OBJECTS['repository'], "... ---")
+            retCode += self.pull_repository()
+            retCode += self.update_repository()
         if retCode != 0:
-            print("Please check the repository at:", gRepoObjects['repository'])
+            print("--- Please check the repository at:", self._REPO_OBJECTS['repository'], "---")
         else:
-            if not os.path.exists(gRepoObjects['template_orig']):
-                print("Saving:", gRepoObjects['template_dest'], "to:", gRepoObjects['template_orig'])
-                shutil.copy2(src=gRepoObjects['template_dest'], dst=gRepoObjects['template_orig'])
+            if not os.path.exists(self._REPO_OBJECTS['template_orig']):
+                print("--- Saving:", self._REPO_OBJECTS['template_dest'], "to:", self._REPO_OBJECTS['template_orig'], "---")
+                shutil.copy2(src=self._REPO_OBJECTS['template_dest'], dst=self._REPO_OBJECTS['template_orig'])
 
-            print("Modifying template file at:", gRepoObjects['template_dest'])
-            shutil.copy2(src=gRepoObjects['template_src'], dst=gRepoObjects['template_dest'])
+            print("--- Modifying template file at:", self._REPO_OBJECTS['template_dest'], "---")
+            shutil.copy2(src=self._REPO_OBJECTS['template_src'], dst=self._REPO_OBJECTS['template_dest'])
 
-            print("Modifying script file at:", gRepoObjects['script_dest'])
-            shutil.copy2(src=gRepoObjects['script_src'], dst=gRepoObjects['script_dest'])
+            print("--- Modifying script file at:", self._REPO_OBJECTS['script_dest'], "---")
+            shutil.copy2(src=self._REPO_OBJECTS['script_src'], dst=self._REPO_OBJECTS['script_dest'])
 
-    def CloneRepository(self):
-        return subprocess.call(args=['hg', 'clone', gRepoObjects['repository_src']], cwd=gRepoObjects['repository_dest'])
+    def clone_repository(self):
+        return subprocess.call(args=['hg', 'clone', self._REPO_OBJECTS['repository_src']], cwd=self._REPO_OBJECTS['repository_dest'])
 
-    def UpdateRepository(self):
-        return subprocess.call(args=['hg', 'update'], cwd=gRepoObjects['repository'])
+    def update_repository(self):
+        return subprocess.call(args=['hg', 'update'], cwd=self._REPO_OBJECTS['repository'])
 
-    def PullRepository(self):
-        return subprocess.call(args=['hg', 'pull'], cwd=gRepoObjects['repository'])
+    def pull_repository(self):
+        return subprocess.call(args=['hg', 'pull'], cwd=self._REPO_OBJECTS['repository'])
 
-    def getRemoteZIP(self):
-        import urllib
-        import urllib.request
-
-        print("Importing zip from:", gRepoObjects['repository_zip'])
-        remote_zip = urllib.request.urlopen(gRepoObjects['repository_zip'])
-        local_zip = open(gRepoObjects['local_zip'], 'wb')
+    def get_remote_zip(self):
+        print("--- Importing zip from:", self._REPO_OBJECTS['repository_zip'], "---")
+        remote_zip = urllib.request.urlopen(self._REPO_OBJECTS['repository_zip'])
+        local_zip = open(self._REPO_OBJECTS['local_zip'], 'wb')
         local_zip.write(remote_zip.readall())
         local_zip.close()
 
-    def unzipZIP(self):
-        import zipfile
-        print("Unzipping:", gRepoObjects['local_zip'])
-        z = zipfile.ZipFile(gRepoObjects['local_zip'])
-        z.extractall(path=gRepoObjects['local_zip_extracted'])
+    def unzip_zip(self):
+        print("--- Unzipping:", self._REPO_OBJECTS['local_zip'], "---")
+        z = zipfile.ZipFile(self._REPO_OBJECTS['local_zip'])
+        z.extractall(path=self._REPO_OBJECTS['local_zip_extracted'])
         z.close()
 
-    def moveZIPFiles(self):
-        print("Moving folders to:", gRepoObjects['repository'])
-        p = gRepoObjects['local_zip_extracted']
+    def move_zip_files(self):
+        print("--- Moving folders to:", self._REPO_OBJECTS['repository'], "---")
+        p = self._REPO_OBJECTS['local_zip_extracted']
         for subp  in os.listdir(path=p):
             subdir = p + os.sep + subp + os.sep
-            for shader in gRepoObjects['shader']:
+            for shader in self._REPO_OBJECTS['shader']:
                 shaderSrc = subdir + shader
-                shaderDst = gRepoObjects['repository'] + os.sep + shader
+                shaderDst = self._REPO_OBJECTS['repository'] + os.sep + shader
                 if os.path.exists(shaderDst):
                     shutil.rmtree(path=shaderDst)
                 shutil.move(src=shaderSrc, dst=shaderDst)
 
-            if not os.path.exists(gRepoObjects['template_orig']):
-                print("Saving:", gRepoObjects['template_dest'], "to:", gRepoObjects['template_orig'])
-                shutil.copy2(src=gRepoObjects['template_dest'], dst=gRepoObjects['template_orig'])
+            if not os.path.exists(self._REPO_OBJECTS['template_orig']):
+                print("--- Saving:", self._REPO_OBJECTS['template_dest'], "to:", self._REPO_OBJECTS['template_orig'], "---")
+                shutil.copy2(src=self._REPO_OBJECTS['template_dest'], dst=self._REPO_OBJECTS['template_orig'])
 
-            tmp_src = subdir + gRepoObjects['template_file']
-            print("Modifying template file at:", gRepoObjects['template_dest'])
-            shutil.copy2(src=tmp_src, dst=gRepoObjects['template_dest'])
+            tmp_src = subdir + self._REPO_OBJECTS['template_file']
+            print("--- Modifying template file at:", self._REPO_OBJECTS['template_dest'], "---")
+            shutil.copy2(src=tmp_src, dst=self._REPO_OBJECTS['template_dest'])
 
-            script_src = subdir + gRepoObjects['script_file_zip']
-            print("Modifying script file at:", gRepoObjects['script_dest'])
-            shutil.copy2(src=script_src, dst=gRepoObjects['script_dest'])
+            script_src = subdir + self._REPO_OBJECTS['script_file_zip']
+            print("--- Modifying script file at:", self._REPO_OBJECTS['script_dest'], "---")
+            shutil.copy2(src=script_src, dst=self._REPO_OBJECTS['script_dest'])
 
         shutil.rmtree(path=p)
-        os.remove(gRepoObjects['local_zip'])
+        os.remove(self._REPO_OBJECTS['local_zip'])
 
 
 def menu_func(self, context):
